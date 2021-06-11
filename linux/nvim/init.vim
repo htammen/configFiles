@@ -1,4 +1,4 @@
-""automated installation of vimplug if not installed
+"automated installation of vimplug if not installed
 if empty(glob('~/.local/share/nvim/site/autoload/plug.vim'))
     silent !curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs
         \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
@@ -8,14 +8,14 @@ endif
 call plug#begin('~/.config/nvim/plugged')
 
 "plugins here, coc for example
-Plug 'neoclide/coc.nvim', { 'branch': 'release' }
 Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app & npm install'  }
-Plug 'jiangmiao/auto-pairs'
+"Plug 'jiangmiao/auto-pairs'
 Plug 'machakann/vim-sandwich'
 Plug 'preservim/nerdcommenter'
 Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-fugitive'
 Plug 'pangloss/vim-javascript'
+Plug 'leafgarland/typescript-vim'
 Plug 'itchyny/lightline.vim'
 Plug 'itchyny/vim-gitbranch'
 Plug 'szw/vim-maximizer'
@@ -26,11 +26,16 @@ Plug 'sbdchd/neoformat'
 Plug 'junegunn/fzf', {'dir': '~/.fzf', 'do': './install --all'}
 Plug 'junegunn/fzf.vim'
 Plug 'diepm/vim-rest-console'
+Plug 'neoclide/coc.nvim', { 'branch': 'release' }
 Plug 'neovim/nvim-lspconfig'
 Plug 'nvim-lua/completion-nvim'
-  Plug 'nvim-lua/popup.nvim'
-  Plug 'nvim-lua/plenary.nvim'
-  Plug 'puremourning/vimspector'
+Plug 'nvim-lua/popup.nvim'
+Plug 'nvim-lua/plenary.nvim'
+Plug 'preservim/tagbar'
+Plug 'ludovicchabant/vim-gutentags'
+Plug 'puremourning/vimspector'
+Plug 'tomasiser/vim-code-dark'
+Plug 'HerringtonDarkholme/yats'
 call plug#end()
 
 
@@ -39,8 +44,9 @@ call plug#end()
 "let &packpath = &runtimepath
 "source ~/.vimrc
 
+set mouse=a
 set nocompatible
-set completeopt=menuone,noinsert,noselect
+set completeopt=longest,menuone,noinsert,noselect
 set splitright
 set splitbelow
 set expandtab
@@ -53,30 +59,34 @@ set smartcase                     " But case-sensitive if expression contains a 
 set incsearch
 set hlsearch
 set hidden
+set noswapfile
+set nobackup                      " Don't make a backup before overwriting a file.
+set nowritebackup                 " And again.
+set directory=$HOME/.vim/tmp//,.  " Keep swap files in one location
+set laststatus=2                  " Show the status line all the time
+set noshowmode                    " Don't show --Insert-- below statusbar cause not necessary
+" Die letzten 100 Befehle in der history behalten
+set history=100
+set cursorline
+set termguicolors                 " Enables 24-bit RGB color
+set updatetime=400
+   
+" kopiert yank (y) in die Zwischenablage, Mac OS: set clipboard=unnamed 
+set clipboard=unnamedplus 
 
 set background=dark
-colorscheme kuroi "morning wombat256grf slate torte desert
+colorscheme codedark " kuroi morning wombat256grf slate torte desert
 set gfn=Menlo\ Regular:h13
 
 syntax enable                     " Turn on syntax highlighting.
 filetype plugin indent on         " Turn on file type detection.
 
-set noswapfile
-set nobackup                      " Don't make a backup before overwriting a file.
-set nowritebackup                 " And again.
-set directory=$HOME/.vim/tmp//,.  " Keep swap files in one location
-
-set laststatus=2                  " Show the status line all the time
 " Useful status information at bottom of screen
 set statusline=[%n]\ %<%.99f\ %h%w%m%r%y\ %{exists('*CapsLockStatusline')?CapsLockStatusline():''}%=%-16(\ %l,%c-%v\ %)%P
 " set foldmethod=indent
+" Note: set re=0 explicitly in your vimrc. Old regexp engine will incur performance issues for yats and old engine is usually turned on by other plugins.
+set re=0
 
-" Die letzten 100 Befehle in der history behalten
-set history=100
-set cursorline
-   
-" kopiert yank (y) in die Zwischenablage, Mac OS: set clipboard=unnamed 
-set clipboard=unnamedplus 
 
 let mapleader=" "    " set leader to space
 
@@ -95,18 +105,37 @@ let g:lightline = {
       \ },
       \ }
 
+      " Alternative to show gitbranch name via plugin vim-gitbranch
+      "\ 'component_function': {
+      "\   'gitbranch': 'gitbranch#name'
+      "\ },
+      "\ 'component_function': {
+      "\   'gitbranch': 'FugitiveHead'
+      "\ },
 "---------------------------- KEY MAPPINGS---------------------
+" for completion popup
+" https://vim.fandom.com/wiki/Make_Vim_completion_popup_menu_work_just_like_in_an_IDE
+"inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+"inoremap <expr> <C-n> pumvisible() ? '<C-n>' :
+  "\ '<C-n><C-r>=pumvisible() ? "\<lt>Down>" : ""<CR>'
+"inoremap <expr> <M-,> pumvisible() ? '<C-n>' :
+  "\ '<C-x><C-o><C-n><C-p><C-r>=pumvisible() ? "\<lt>Down>" : ""<CR>'
+
 " ,, reloads ~/.config/nvim/init.vim
 nnoremap <silent> <Leader><Leader> :source $MYVIMRC<cr>
 " ,v loads ~/.config/nvim/init.vim into a new buffer
 nnoremap <silent> <Leader>v :e $MYVIMRC<cr>
 
+" leader x closes buffer
+nnoremap <leader>x :bd<cr>
+
 " toggle display extra whitespaces
 map <Leader>lc :set list! listchars=tab:»·,trail:·,eol:$,nbsp:·<CR>
 
 " because <C-]> on german keyboard is a impossible mission
-nnoremap ä <C-]>
+nnoremap Ö <C-]>
 nnoremap ö <]>
+nnoremap ä <[>
 
 " toggle line wrapping ",w"
 nmap <silent> <Leader>w :set invwrap<CR>:set wrap?<CR>
@@ -119,7 +148,7 @@ map <leader>+ :vertical resize +5<CR>
 map <leader>- :vertical resize -5<CR>
 
 " press ,b to open buffer list and select a buffer by name or number
-nnoremap <Leader>b :buffers<CR>:buffer<Space>
+nnoremap <Leader>b :Buffers <CR>
 nnoremap <Leader>h :History<CR>
 
 " format an xml with ,xf
@@ -143,6 +172,7 @@ tnoremap <c-q> <c-\><c-n>:Ttoggle<CR>
 
 " sbdchd/neoformat
 nnoremap <leader>F :Neoformat prettier<CR> 
+nnoremap <leader>f :Prettier<CR>
 
 " junngunn /fzf.vim
 nnoremap <leader><space> :GFiles<CR>
@@ -150,9 +180,15 @@ nnoremap <c-p> :Files<CR>
 nnoremap <leader>ff :Rg<CR>
 " Search content in the current file
 nmap <leader>l :BLines<cr>
+nmap <leader>tt :Tags<cr>
+nmap <leader>tb :BTags<cr>
 inoremap <expr> <c-x><c-f> fzf#vim#complete#path(
   \ "find . -path '*/\.*' -prune -o -print \| sed '1d;s:^..::'",
   \ fzf#wrap({'dir': expand('%:p:h')}))
+nmap <leader><tab> <plug>(fzf-maps-n)
+xmap <leader><tab> <plug>(fzf-maps-x)
+omap <leader><tab> <plug>(fzf-maps-o)
+
 if has('nvim')
   au! TermOpen * tnoremap <buffer> <Esc> <c-\><c-n>
   au! FileType fzf tunmap <buffer> <Esc>
@@ -165,26 +201,26 @@ nnoremap <leader>gd :Gdiff master<cr>
 nnoremap <leader>gl :G log -100<cr>
 
 " neovim/nvim-lspconfig
-lua require'lspconfig'.tsserver.setup{}
-lua << EOF
-local lspconfig = require'lspconfig'
-  lspconfig.rust_analyzer.setup({
-      settings = {
-          ["rust-analyzer"] = {
-              assist = {
-                  importMergeBehavior = "last",
-                  importPrefix = "by_self",
-              },
-              cargo = {
-                  loadOutDirsFromCheck = true
-              },
-              procMacro = {
-                  enable = true
-              },
-          }
-      }
-  })
-EOF
+"lua require'lspconfig'.tsserver.setup{}
+"lua << EOF
+"local lspconfig = require'lspconfig'
+  "lspconfig.rust_analyzer.setup({
+      "settings = {
+          "["rust-analyzer"] = {
+              "assist = {
+                  "importMergeBehavior = "last",
+                  "importPrefix = "by_self",
+              "},
+              "cargo = {
+                  "loadOutDirsFromCheck = true
+              "},
+              "procMacro = {
+                  "enable = true
+              "},
+          "}
+      "}
+  "})
+"EOF
 
 nnoremap <silent> gd <cmd>lua vim.lsp.buf.definition()<CR>
 nnoremap <silent> gh     <cmd>lua vim.lsp.buf.hover()<CR>
@@ -205,23 +241,30 @@ nnoremap <silent> gR    <cmd>lua vim.lsp.buf.rename()<CR>
  endfunction
  let g:vimspector_base_dir = expand('$HOME/.config/vimspector-config')
  let g:vimspector_sidebar_width = 60
- nnoremap <leader>da :call vimspector#Launch()<CR>
- nnoremap <leader>dc :call GotoWindow(g:vimspector_session_windows.code)<CR>
- nnoremap <leader>dv :call GotoWindow(g:vimspector_session_windows.variables)<CR>
- nnoremap <leader>dw :call GotoWindow(g:vimspector_session_windows.watches)<CR>
- nnoremap <leader>ds :call GotoWindow(g:vimspector_session_windows.stack_trace)<CR>
- nnoremap <leader>do :call GotoWindow(g:vimspector_session_windows.output)<CR>
- nnoremap <leader>di :call AddToWatch()<CR>
- nnoremap <leader>dx :call vimspector#Reset()<CR>
- nnoremap <leader>dX :call vimspector#ClearBreakpoints()<CR>
- nnoremap <S-k> :call vimspector#StepOut()<CR>
- nnoremap <S-l> :call vimspector#StepInto()<CR>
- nnoremap <S-j> :call vimspector#StepOver()<CR>
- nnoremap <leader>d_ :call vimspector#Restart()<CR>
- nnoremap <leader>dn :call vimspector#Continue()<CR>
- nnoremap <leader>drc :call vimspector#RunToCursor()<CR>
- nnoremap <leader>dh :call vimspector#ToggleBreakpoint()<CR>
- nnoremap <leader>de :call vimspector#ToggleConditionalBreakpoint()<CR>
+ " https://github.com/puremourning/vimspector#visual-studio--vscode
+ let g:vimspector_enable_mappings = 'VISUAL_STUDIO'
+ " for normal mode - the word under the cursor
+ nmap <Leader>di <Plug>VimspectorBalloonEval
+ " for visual mode, the visually selected text
+ xmap <Leader>di <Plug>VimspectorBalloonEval
+ nmap <S-F5> <Plug>VimspectorReset 
+ "nnoremap <leader>da :call vimspector#Launch()<CR>
+ "nnoremap <leader>dc :call GotoWindow(g:vimspector_session_windows.code)<CR>
+ "nnoremap <leader>dv :call GotoWindow(g:vimspector_session_windows.variables)<CR>
+ "nnoremap <leader>dw :call GotoWindow(g:vimspector_session_windows.watches)<CR>
+ "nnoremap <leader>ds :call GotoWindow(g:vimspector_session_windows.stack_trace)<CR>
+ "nnoremap <leader>do :call GotoWindow(g:vimspector_session_windows.output)<CR>
+ "nnoremap <leader>di :call AddToWatch()<CR>
+ "nnoremap <leader>dx :call vimspector#Reset()<CR>
+ "nnoremap <leader>dX :call vimspector#ClearBreakpoints()<CR>
+ "nnoremap <S-k> :call vimspector#StepOut()<CR>
+ "nnoremap <S-l> :call vimspector#StepInto()<CR>
+ "nnoremap <S-j> :call vimspector#StepOver()<CR>
+ "nnoremap <leader>d_ :call vimspector#Restart()<CR>
+ "nnoremap <leader>dn :call vimspector#Continue()<CR>
+ "nnoremap <leader>drc :call vimspector#RunToCursor()<CR>
+ "nnoremap <leader>dh :call vimspector#ToggleBreakpoint()<CR>
+ "nnoremap <leader>de :call vimspector#ToggleConditionalBreakpoint()<CR>
  let g:vimspector_sign_priority = {
    \    'vimspectorBP':         998,
    \    'vimspectorBPCond':     997,
@@ -251,12 +294,20 @@ function! s:show_documentation()
     execute '!' . &keywordprg . " " . expand('<cword>')
   endif
 endfunction
+" Coc-Prettier config
+command! -nargs=0 Prettier :CocCommand prettier.formatFile
+:nnoremap <leader>e :CocCommand explorer<CR>
+
+" Coc-Highlight config
+autocmd CursorHold * silent call CocActionAsync('highlight')
 
 " use some shortcuts to jump to definition and implementation
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
+nmap <leader>rn <Plug>(coc-rename)
+nmap <leader>dgn <Plug>(coc-diagnostic-next-error)
 "------------------------------------------------------------------------------------------------------------------
 " coc.vim configuration END
 "------------------------------------------------------------------------------------------------------------------
